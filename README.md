@@ -19,17 +19,21 @@ Los dos servicios usan la **misma base Postgres** y el mismo código del repo; s
 
 ## Despliegue en Railway (todo desde GitHub)
 
-1. Proyecto nuevo → **Deploy from GitHub repo** → este repo. Se crea el servicio `landing`.
+El repo trae `main.py` y `railway.json`: no hace falta configurar comandos en el panel.
+Un mismo código, dos servicios; la variable `SERVICE` decide cuál arranca.
+
+1. Proyecto nuevo → **Deploy from GitHub repo** → este repo. Será el servicio `landing`.
 2. Agregar **Postgres** (`+ New → Database → PostgreSQL`).
-3. Servicio `landing` → Settings → *Config as code* → ruta `railway.landing.json`. Variables:
+3. Servicio `landing` → Variables:
    - `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`
    - `WHATSAPP_NEGOCIO` = número de prueba de 8 dígitos (opcional)
    - Settings → Networking → **Generate domain**.
-4. `+ New → GitHub Repo` (el mismo repo) → servicio `mcp`. Config as code: `railway.mcp.json`. Variables:
+4. `+ New → GitHub Repo` (el mismo repo) → servicio `mcp`. Variables:
+   - `SERVICE` = `mcp`
    - `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`
    - `MCP_TOKEN` = valor aleatorio largo (`python -c "import secrets; print(secrets.token_urlsafe(32))"`)
    - Generate domain.
-5. (Opcional) Cargar datos ficticios: en el servicio `landing`, `railway run python -m scripts.seed` o desde la shell del servicio.
+5. (Opcional) Cargar datos ficticios: `python -m scripts.seed` desde la shell del servicio `landing`.
 
 Ninguna clave va en el código: todo es variable de entorno (`.env` está en `.gitignore`).
 
@@ -50,7 +54,7 @@ cp .env.example .env          # SQLite por defecto; no subir .env
 python -m pytest -q           # SQLite
 TEST_DATABASE_URL=postgresql://user:pass@host/db python -m pytest -q   # incluye prueba de concurrencia
 python -m uvicorn landing.app:app --reload
-MCP_TOKEN=$(python -c "import secrets;print(secrets.token_urlsafe(32))") python -m mcp_server
+SERVICE=mcp MCP_TOKEN=$(python -c "import secrets;print(secrets.token_urlsafe(32))") python main.py
 ```
 
 ## Seguridad

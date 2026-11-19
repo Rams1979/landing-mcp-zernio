@@ -1,7 +1,7 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "deploy": {
-    "startCommand": "python -m mcp_server",
+    "startCommand": "python main.py",
     "healthcheckPath": "/health"
   }
 }
