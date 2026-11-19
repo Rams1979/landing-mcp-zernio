@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block body %}
+<main class="wrap">
+{% if not vigente %}
+<section class="cerrada"><h1>La oferta terminó</h1><p class="lead" style="margin:auto">El {{ c.OFERTA }} cerró el {{ fecha_larga(c.FECHA_LIMITE) }}. Escríbanos para la próxima temporada.</p></section>
+{% else %}
+<section class="hero">
+  <div>
+    <div class="eyebrow">Oferta de temporada · hasta el {{ fecha_larga(c.FECHA_LIMITE) }}</div>
+    <h1>{{ c.OFERTA }}</h1>
+    <p class="lead">{{ c.DESCRIPCION }}</p>
+    <div class="precio"><span class="ancla">{{ colones(c.PRECIO_ANCLA) }}</span><span class="oferta">{{ colones(c.PRECIO_OFERTA) }}</span></div>
+    <span class="ahorro">Ahorra {{ colones(c.PRECIO_ANCLA - c.PRECIO_OFERTA) }}</span>
+    <div class="quedan" role="status">{% if libres > 0 %}Quedan <b>{{ libres }}</b> cupos hasta el cierre ({{ restan }} {{ 'día' if restan == 1 else 'días' }}). Máximo {{ c.CUPOS_POR_DIA }} por día.{% else %}Cupos agotados.{% endif %}</div>
+    <ul class="lista"><li>Retiro en el vivero de lunes a sábado</li><li>Elegimos las plantas según la luz de su espacio</li><li>Pago al retirar</li></ul>
+  </div>
+  <form method="post" action="/reservar" id="reservar">
+    <h2>Reserve su cupo</h2>
+    {% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
+    <label for="nombre">Nombre</label>
+    <input id="nombre" name="nombre" required minlength="2" maxlength="80" autocomplete="name" value="{{ v.nombre or '' }}">
+    <label for="whatsapp">WhatsApp</label>
+    <input id="whatsapp" name="whatsapp" required inputmode="tel" autocomplete="tel" placeholder="8888 0000" value="{{ v.whatsapp or '' }}">
+    <label for="dia">Día de retiro</label>
+    <select id="dia" name="dia" required>
+      <option value="">Elija un día</option>
+      {% for d in dias if d.libres > 0 %}<option value="{{ d.fecha.isoformat() }}" {{ 'selected' if v.dia == d.fecha.isoformat() }}>{{ fecha_larga(d.fecha) }} · {{ d.libres }} {{ 'cupo' if d.libres == 1 else 'cupos' }}</option>{% endfor %}
+    </select>
+    <label for="espacio">¿Dónde pondrá las plantas?</label>
+    <select id="espacio" name="espacio" required>
+      <option value="">Elija una opción</option>
+      {% for k, n in c.ESPACIOS.items() %}<option value="{{ k }}" {{ 'selected' if v.espacio == k }}>{{ n }}</option>{% endfor %}
+    </select>
+    <div class="hp" aria-hidden="true"><label>No llenar<input name="web" tabindex="-1" autocomplete="off"></label></div>
+    <button class="btn" type="submit" {{ 'disabled' if libres == 0 }}>Reservar mi pack</button>
+    {% if wa %}<a class="btn ghost" href="{{ wa }}" rel="noopener">Prefiero escribir por WhatsApp</a>{% endif %}
+    <p class="small">Solo usaremos su número para confirmar el retiro.</p>
+  </form>
+</section>
+{% endif %}
+</main>
+{% endblock %}

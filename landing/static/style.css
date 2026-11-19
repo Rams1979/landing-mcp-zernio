@@ -1,0 +1,35 @@
+:root{--ink:#16241B;--muted:#55645A;--moss:#1F4D36;--leaf:#7FA77A;--tint:#E3ECDD;--line:#D3DECD;--seal:#B8402B;--bg:#fff;
+--display:"Shippori Mincho",Georgia,serif;--body:"Hanken Grotesk",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--body)}
+h1,h2{font-family:var(--display);line-height:1.15;margin:0}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+.top{border-bottom:1px solid var(--line);padding:14px 0}
+.top .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font-family:var(--display);font-weight:800;font-size:26px}.brand span{color:var(--seal);margin-left:8px}
+.demo{background:var(--tint);color:var(--moss);font-size:14px;text-align:center;padding:8px 20px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;padding:48px 0;align-items:start}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:clamp(36px,6vw,60px);font-weight:800;margin:12px 0 16px}
+.lead{color:var(--muted);font-size:19px;max-width:48ch}
+.precio{display:flex;align-items:baseline;gap:16px;margin:24px 0 8px}
+.ancla{font-size:24px;color:var(--muted);text-decoration:line-through}
+.oferta{font-family:var(--display);font-size:58px;font-weight:800;color:var(--moss)}
+.ahorro{display:inline-block;background:var(--seal);color:#fff;font-weight:600;font-size:14px;padding:4px 12px;border-radius:999px}
+.quedan{margin-top:20px;padding:14px 18px;border-left:4px solid var(--seal);background:#fbf1ee;font-weight:500}
+.lista{padding:0;margin:24px 0 0;list-style:none}.lista li{padding-left:22px;position:relative;margin:6px 0}
+.lista li::before{content:"";position:absolute;left:0;top:11px;width:8px;height:8px;border-radius:50%;background:var(--leaf)}
+form{border:1px solid var(--line);border-radius:12px;padding:24px;background:#fff;box-shadow:0 8px 30px rgba(31,77,54,.08)}
+form h2{font-size:26px;margin-bottom:16px}
+label{display:block;font-weight:600;font-size:15px;margin:14px 0 6px}
+input,select{width:100%;min-height:48px;padding:0 14px;border:1.5px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+input:focus,select:focus,.btn:focus-visible{outline:3px solid var(--seal);outline-offset:2px}
+.hp{position:absolute;left:-9999px;height:0;overflow:hidden}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;margin-top:20px;border:0;border-radius:999px;
+background:var(--moss);color:#fff;font:600 17px var(--body);cursor:pointer;text-decoration:none}
+.btn:hover{filter:brightness(1.1)}.btn.ghost{background:transparent;color:var(--moss);border:2px solid var(--moss)}
+.err{background:#fbe9e6;border:1px solid var(--seal);color:#7d2515;border-radius:8px;padding:10px 14px;margin-bottom:8px}
+.small{font-size:14px;color:var(--muted);margin-top:12px}
+.cerrada{padding:60px 0;text-align:center}
+footer{border-top:1px solid var(--line);padding:24px 0;color:var(--muted);font-size:14px;margin-top:40px}
+@media(max-width:800px){.hero{grid-template-columns:1fr;padding:28px 0}.oferta{font-size:48px}}

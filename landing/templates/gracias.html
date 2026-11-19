@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Reserva recibida · {{ c.NEGOCIO }}{% endblock %}
+{% block body %}
+<main class="wrap cerrada"><h1>¡Cupo reservado!</h1>
+<p class="lead" style="margin:16px auto">Lo esperamos el <b>{{ fecha_larga(fecha) }}</b> en el vivero para retirar su {{ c.OFERTA }}. Le escribiremos por WhatsApp para confirmar.</p>
+<p><a class="btn ghost" style="display:inline-flex;width:auto;padding:0 28px" href="/">Volver al inicio</a></p></main>
+{% endblock %}

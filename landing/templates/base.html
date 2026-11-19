@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}{{ c.OFERTA }} · {{ c.NEGOCIO }}{% endblock %}</title>
+<meta name="description" content="{{ c.OFERTA }}: {{ c.DESCRIPCION }}">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Shippori+Mincho:wght@500;800&display=swap">
+<link rel="stylesheet" href="/static/style.css"></head><body>
+<div class="demo">Demo de taller con datos ficticios. No se realizan ventas ni entregas reales.</div>
+<header class="top"><div class="wrap"><div class="brand">{{ c.NEGOCIO }}<span>緑</span></div></div></header>
+{% block body %}{% endblock %}
+<footer><div class="wrap">{{ c.NEGOCIO }} · Retiro en el vivero, sin envíos · Cifras de demostración</div></footer>
+</body></html>
