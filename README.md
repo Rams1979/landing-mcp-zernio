@@ -39,11 +39,12 @@ Ninguna clave va en el código: todo es variable de entorno (`.env` está en `.g
 
 ## Conectar el MCP a Claude
 
-URL del conector personalizado: `https://<dominio-mcp>.up.railway.app/mcp`
+URL del conector personalizado: `https://<dominio-mcp>.up.railway.app/<MCP_TOKEN>/mcp`
 
-El servidor acepta el token como `Authorization: Bearer <MCP_TOKEN>` o como `?key=<MCP_TOKEN>`.
-Si el formulario del conector en Claude no permite cabeceras, use la URL con `?key=`.
-Ese token queda en la URL: es aceptable para la demo; para producción conviene OAuth y rotar el token.
+Claude no permite cabeceras propias en conectores personalizados y trata cualquier 401 como "usa OAuth".
+Por eso el secreto va **en la ruta de la URL**; cualquier petición sin él recibe 404.
+Clientes programáticos también pueden usar `Authorization: Bearer <MCP_TOKEN>` o `?key=<MCP_TOKEN>`.
+El token queda en los logs de acceso y en la URL: aceptable para la demo; para producción conviene OAuth y rotarlo.
 
 ## Desarrollo local
 

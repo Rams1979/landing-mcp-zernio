@@ -83,27 +83,37 @@ def resumen_campana() -> dict:
 
 
 class AuthToken:
-    """Middleware ASGI: exige el token como `Authorization: Bearer` o `?key=`. /health y / quedan abiertos."""
+    """Middleware ASGI. El secreto viaja en la URL: `/<MCP_TOKEN>/mcp`.
+
+    Claude (conectores personalizados) no puede enviar cabeceras propias y trata cualquier 401 como
+    "este servidor usa OAuth". Por eso una petición sin credencial válida recibe 404, no 401.
+    También se acepta `Authorization: Bearer` y `?key=` para clientes programáticos.
+    /health y / quedan abiertos (sin datos).
+    """
 
     def __init__(self, app, token: str):
         self.app, self.token = app, token.encode()
 
+    def _ok(self, valor: bytes) -> bool:
+        return bool(valor) and hmac.compare_digest(valor, self.token)
+
     async def __call__(self, scope, receive, send):
-        # /health y la raíz quedan abiertos; /.well-known pasa al servidor (responde 404: sin OAuth).
-        if scope["type"] != "http" or scope["path"] in ("/", "/health") or scope["path"].startswith("/.well-known"):
+        if scope["type"] != "http" or scope["path"] in ("/", "/health"):
             return await self.app(scope, receive, send)
-        cab = dict(scope["headers"])
-        candidato = b""
-        auth = cab.get(b"authorization", b"")
-        if auth[:7].lower() == b"bearer ":
-            candidato = auth[7:].strip()
-        else:
-            from urllib.parse import parse_qs
-            candidato = parse_qs(scope["query_string"].decode()).get("key", [""])[0].encode()
-        if not candidato or not hmac.compare_digest(candidato, self.token):
-            resp = JSONResponse({"error": "no autorizado"}, status_code=401, headers={"WWW-Authenticate": "Bearer"})
-            return await resp(scope, receive, send)
-        await self.app(scope, receive, send)
+        ruta = scope["path"]
+        partes = ruta.split("/", 2)  # ["", "<segmento>", "<resto>"]
+        if len(partes) == 3 and self._ok(partes[1].encode()):
+            nueva = "/" + partes[2]
+            scope = dict(scope, path=nueva, raw_path=nueva.encode())
+            return await self.app(scope, receive, send)
+        auth = dict(scope["headers"]).get(b"authorization", b"")
+        if auth[:7].lower() == b"bearer " and self._ok(auth[7:].strip()):
+            return await self.app(scope, receive, send)
+        from urllib.parse import parse_qs
+        if self._ok(parse_qs(scope["query_string"].decode()).get("key", [""])[0].encode()):
+            return await self.app(scope, receive, send)
+        resp = JSONResponse({"error": "no encontrado"}, status_code=404)
+        await resp(scope, receive, send)
 
 
 def crear_app():

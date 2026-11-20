@@ -100,12 +100,30 @@ def test_mcp_auth_http():
     with TestClient(server.crear_app()) as h:
         assert h.get("/health").status_code == 200
         assert h.get("/").status_code == 200
-        assert h.get("/.well-known/oauth-authorization-server").status_code == 404
-        assert h.post("/mcp", json={}).status_code == 401
-        assert h.post("/mcp", json={}, headers={"Authorization": "Bearer mal"}).status_code == 401
-        assert h.post("/mcp?key=mal", json={}).status_code == 401
-        assert h.post("/mcp", json={}, headers={"Authorization": f"Bearer {t}"}).status_code != 401
-        assert h.post(f"/mcp?key={t}", json={}).status_code != 401
+        # sin credencial válida: 404 (nunca 401, para que Claude no busque OAuth)
+        for r in (h.post("/mcp", json={}), h.get("/.well-known/oauth-authorization-server"),
+                  h.post("/mal/mcp", json={}), h.post("/mcp?key=mal", json={}),
+                  h.post("/mcp", json={}, headers={"Authorization": "Bearer mal"})):
+            assert r.status_code == 404 and "WWW-Authenticate" not in r.headers
+        # credencial válida: ruta secreta, Bearer o ?key=
+        assert h.post(f"/{t}/mcp", json={}).status_code != 404
+        assert h.post("/mcp", json={}, headers={"Authorization": f"Bearer {t}"}).status_code != 404
+        assert h.post(f"/mcp?key={t}", json={}).status_code != 404
+
+
+def test_mcp_cliente_ruta_secreta():
+    import threading, time, uvicorn
+    cfg = uvicorn.Config(server.crear_app(), port=8133, log_level="error")
+    srv = uvicorn.Server(cfg)
+    th = threading.Thread(target=srv.run, daemon=True); th.start()
+    time.sleep(2)
+    async def run():
+        async with Client(f"http://127.0.0.1:8133/{'t' * 32}/mcp") as cl:
+            assert len(await cl.list_tools()) == 4
+    try:
+        asyncio.run(run())
+    finally:
+        srv.should_exit = True; th.join(5)
 
 
 def test_sin_token_no_arranca(monkeypatch):
