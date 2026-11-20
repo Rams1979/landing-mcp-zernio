@@ -99,6 +99,8 @@ def test_mcp_auth_http():
     t = "t" * 32
     with TestClient(server.crear_app()) as h:
         assert h.get("/health").status_code == 200
+        assert h.get("/").status_code == 200
+        assert h.get("/.well-known/oauth-authorization-server").status_code == 404
         assert h.post("/mcp", json={}).status_code == 401
         assert h.post("/mcp", json={}, headers={"Authorization": "Bearer mal"}).status_code == 401
         assert h.post("/mcp?key=mal", json={}).status_code == 401

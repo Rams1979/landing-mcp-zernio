@@ -83,13 +83,14 @@ def resumen_campana() -> dict:
 
 
 class AuthToken:
-    """Middleware ASGI: exige el token como `Authorization: Bearer` o `?key=`. /health queda abierto."""
+    """Middleware ASGI: exige el token como `Authorization: Bearer` o `?key=`. /health y / quedan abiertos."""
 
     def __init__(self, app, token: str):
         self.app, self.token = app, token.encode()
 
     async def __call__(self, scope, receive, send):
-        if scope["type"] != "http" or scope["path"] == "/health":
+        # /health y la raíz quedan abiertos; /.well-known pasa al servidor (responde 404: sin OAuth).
+        if scope["type"] != "http" or scope["path"] in ("/", "/health") or scope["path"].startswith("/.well-known"):
             return await self.app(scope, receive, send)
         cab = dict(scope["headers"])
         candidato = b""
@@ -112,6 +113,7 @@ def crear_app():
     init_db()
     app = mcp.http_app(path="/mcp")
     app.add_route("/health", lambda request: JSONResponse({"ok": True}))
+    app.add_route("/", lambda request: JSONResponse({"servicio": "mcp", "endpoint": "/mcp"}))
     app.add_middleware(AuthToken, token=token)
     return app
 
