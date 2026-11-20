@@ -100,20 +100,33 @@ class AuthToken:
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http" or scope["path"] in ("/", "/health"):
             return await self.app(scope, receive, send)
+        # Registro de diagnóstico sin secretos: método, ruta con el token tapado, cabeceras clave y estado.
+        h = dict(scope["headers"])
+        ruta_log = scope["path"].replace(self.token.decode(), "<tok>")
+        estado = {}
+
+        async def send_log(msg):
+            if msg["type"] == "http.response.start":
+                estado["s"] = msg["status"]
+                ct = dict(msg.get("headers", [])).get(b"content-type", b"").decode()
+                print(f"MCP {scope['method']} {ruta_log} accept={h.get(b'accept', b'').decode()[:60]!r} "
+                      f"ua={h.get(b'user-agent', b'').decode()[:40]!r} -> {msg['status']} {ct}", flush=True)
+            await send(msg)
+
         ruta = scope["path"]
         partes = ruta.split("/", 2)  # ["", "<segmento>", "<resto>"]
         if len(partes) == 3 and self._ok(partes[1].encode()):
             nueva = "/" + partes[2]
             scope = dict(scope, path=nueva, raw_path=nueva.encode())
-            return await self.app(scope, receive, send)
+            return await self.app(scope, receive, send_log)
         auth = dict(scope["headers"]).get(b"authorization", b"")
         if auth[:7].lower() == b"bearer " and self._ok(auth[7:].strip()):
-            return await self.app(scope, receive, send)
+            return await self.app(scope, receive, send_log)
         from urllib.parse import parse_qs
         if self._ok(parse_qs(scope["query_string"].decode()).get("key", [""])[0].encode()):
-            return await self.app(scope, receive, send)
+            return await self.app(scope, receive, send_log)
         resp = JSONResponse({"error": "no encontrado"}, status_code=404)
-        await resp(scope, receive, send)
+        await resp(scope, receive, send_log)
 
 
 def crear_app():
@@ -130,7 +143,7 @@ def crear_app():
 
 def main():
     import uvicorn
-    uvicorn.run(crear_app(), host="0.0.0.0", port=int(os.environ.get("PORT", "8000")))
+    uvicorn.run(crear_app(), host="0.0.0.0", port=int(os.environ.get("PORT", "8000")), access_log=False)
 
 
 if __name__ == "__main__":
